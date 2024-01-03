@@ -149,16 +149,17 @@ export function injectSecret(secretName: string, secretAlias: string | undefined
 
         // Fail the action if this variable name is already in use, or is our cleanup name
         if (process.env[envName] || envName === CLEANUP_NAME){
-            throw new Error(`The environment name '${envName}' is already in use. Please use an alias to ensure that each secret has a unique environment name`);
+            console.warn(`The environment name '${envName}' is already in use. It will NOT be overwritten. Please use an alias to ensure that each secret has a unique environment name`)
+        } else {
+            // Inject a single secret
+            core.setSecret(secretValue);
+
+            // Export variable
+            core.debug(`Injecting secret ${secretName} as environment variable '${envName}'.`);
+            core.exportVariable(envName, secretValue);
+            secretsToCleanup.push(envName);
         }
 
-        // Inject a single secret
-        core.setSecret(secretValue);
-
-        // Export variable
-        core.debug(`Injecting secret ${secretName} as environment variable '${envName}'.`);
-        core.exportVariable(envName, secretValue);
-        secretsToCleanup.push(envName);
     }
 
     return secretsToCleanup;
